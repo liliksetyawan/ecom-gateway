@@ -64,7 +64,6 @@ func (uc *UserClient) Register(req interface{}) (map[string]interface{}, error) 
 	return res, err
 }
 
-// Contoh wrapper untuk Login
 func (uc *UserClient) Login(req interface{}) (map[string]interface{}, error) {
 	var res map[string]interface{}
 	err := uc.callAPI(http.MethodPost, "/login", "", req, &res)

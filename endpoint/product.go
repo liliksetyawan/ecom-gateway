@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"ecom-gateway/config"
 	"ecom-gateway/middleware"
 	"ecom-gateway/service"
 	"encoding/json"
@@ -24,9 +25,17 @@ func (pg *ProductGateway) CreateProductHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	ctxData, ok := r.Context().Value(middleware.ContextKey).(*middleware.ContextData)
+	if !ok || ctxData == nil {
+		http.Error(w, "user context not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID := ctxData.UserID
+
 	w.Header().Set("Content-Type", "application/json")
 	var result map[string]interface{}
-	err := pg.client.CreateProduct(r.Header.Get("Authorization"), req, &result)
+	err := pg.client.CreateProduct(config.AppConfig.FixToken, userID, req, &result)
 	if err != nil {
 		middleware.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
@@ -44,8 +53,16 @@ func (pg *ProductGateway) GetProductByIDHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	ctxData, ok := r.Context().Value(middleware.ContextKey).(*middleware.ContextData)
+	if !ok || ctxData == nil {
+		http.Error(w, "user context not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID := ctxData.UserID
+
 	var result map[string]interface{}
-	err = pg.client.GetProductByID(r.Header.Get("Authorization"), id, &result)
+	err = pg.client.GetProductByID(config.AppConfig.FixToken, userID, id, &result)
 	if err != nil {
 		middleware.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
@@ -59,8 +76,16 @@ func (pg *ProductGateway) GetProductsHandler(w http.ResponseWriter, r *http.Requ
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 
+	ctxData, ok := r.Context().Value(middleware.ContextKey).(*middleware.ContextData)
+	if !ok || ctxData == nil {
+		http.Error(w, "user context not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID := ctxData.UserID
+
 	var result map[string]interface{}
-	err := pg.client.GetProducts(r.Header.Get("Authorization"), limit, offset, &result)
+	err := pg.client.GetProducts(config.AppConfig.FixToken, userID, limit, offset, &result)
 	if err != nil {
 		middleware.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 		return

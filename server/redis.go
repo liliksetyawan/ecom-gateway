@@ -4,6 +4,7 @@ import (
 	"context"
 	"ecom-gateway/config"
 	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 var ctx = context.Background()
@@ -22,7 +23,7 @@ func NewRedisClient() *RedisClient {
 }
 
 func (r *RedisClient) SetToken(token string, userID string, ttlSeconds int) error {
-	return r.client.Set(ctx, token, userID, 0).Err()
+	return r.client.Set(ctx, token, userID, time.Duration(ttlSeconds)*time.Second).Err()
 }
 
 func (r *RedisClient) ValidateToken(token string) (string, error) {

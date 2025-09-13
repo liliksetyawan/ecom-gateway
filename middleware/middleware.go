@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"ecom-gateway/server"
 	"encoding/json"
 	"log"
@@ -8,6 +9,14 @@ import (
 	"strings"
 	"time"
 )
+
+type ContextData struct {
+	UserID string
+}
+
+type key int
+
+const ContextKey key = 0
 
 type Middleware struct {
 	redis *server.RedisClient
@@ -21,12 +30,13 @@ func (m *Middleware) LoggingAndAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// Ambil token dari header
 		authHeader := r.Header.Get("Authorization")
 		var userID string
 		var err error
+		var ctxData *ContextData
 
-		if authHeader != "" {
+		if !strings.Contains(r.URL.Path, "/register") && !strings.Contains(r.URL.Path, "/login") {
+			//if authHeader != "" {
 			token := strings.TrimPrefix(authHeader, "Bearer ")
 			userID, err = m.redis.ValidateToken(token)
 			if err != nil {
@@ -34,12 +44,16 @@ func (m *Middleware) LoggingAndAuth(next http.Handler) http.Handler {
 				logJSON(r, start, http.StatusUnauthorized, "unauthorized")
 				return
 			}
+
+			ctxData = &ContextData{
+				UserID: userID,
+			}
+			//}
 		}
 
-		// Teruskan ke handler berikutnya
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), ContextKey, ctxData)
+		next.ServeHTTP(w, r.WithContext(ctx))
 
-		// Log request
 		logJSON(r, start, http.StatusOK, userID)
 	})
 }

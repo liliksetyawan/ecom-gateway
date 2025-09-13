@@ -23,7 +23,7 @@ func main() {
 	redisClient := server.NewRedisClient()
 
 	userClient := service.NewUserClient()
-	userGateway := endpoint.NewUserGateway(userClient)
+	userGateway := endpoint.NewUserGateway(userClient, redisClient)
 
 	productClient := service.NewProductClient()
 	productGateway := endpoint.NewProductGateway(productClient)

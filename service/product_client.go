@@ -22,7 +22,7 @@ func NewProductClient() *ProductClient {
 	}
 }
 
-func (uc *ProductClient) callAPI(method, path, token string, payload interface{}, result interface{}) error {
+func (uc *ProductClient) callAPI(method, path, token, userID string, payload interface{}, result interface{}) error {
 	var body io.Reader
 
 	// Hanya encode payload kalau bukan GET
@@ -39,10 +39,8 @@ func (uc *ProductClient) callAPI(method, path, token string, payload interface{}
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
-	if token != "" {
-		req.Header.Set("Authorization", token) // token sudah "Bearer ..." dari header
-	}
+	req.Header.Set("X-UserID", userID)
+	req.Header.Set("Authorization", token)
 
 	resp, err := uc.httpClient.Do(req)
 	if err != nil {
@@ -62,16 +60,16 @@ func (uc *ProductClient) callAPI(method, path, token string, payload interface{}
 	return json.Unmarshal(respBody, result)
 }
 
-func (uc *ProductClient) CreateProduct(token string, body interface{}, result interface{}) error {
-	return uc.callAPI(http.MethodPost, "/product", token, body, result)
+func (uc *ProductClient) CreateProduct(token, userID string, body interface{}, result interface{}) error {
+	return uc.callAPI(http.MethodPost, "/product", userID, token, body, result)
 }
 
-func (uc *ProductClient) GetProductByID(token string, id int64, result interface{}) error {
+func (uc *ProductClient) GetProductByID(token, userID string, id int64, result interface{}) error {
 	path := fmt.Sprintf("/product/%d", id)
-	return uc.callAPI(http.MethodGet, path, token, nil, result)
+	return uc.callAPI(http.MethodGet, path, token, userID, nil, result)
 }
 
-func (uc *ProductClient) GetProducts(token string, limit, offset int, result interface{}) error {
+func (uc *ProductClient) GetProducts(token, userID string, limit, offset int, result interface{}) error {
 	path := fmt.Sprintf("/product?limit=%d&offset=%d", limit, offset)
-	return uc.callAPI(http.MethodGet, path, token, nil, result)
+	return uc.callAPI(http.MethodGet, path, token, userID, nil, result)
 }
