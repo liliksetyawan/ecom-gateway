@@ -62,6 +62,16 @@ func (uc *ProductClient) callAPI(method, path, token string, payload interface{}
 	return json.Unmarshal(respBody, result)
 }
 
-func (uc *ProductClient) GetProduct(token string, result interface{}) error {
-	return uc.callAPI(http.MethodGet, "/product/list", token, nil, result)
+func (uc *ProductClient) CreateProduct(token string, body interface{}, result interface{}) error {
+	return uc.callAPI(http.MethodPost, "/product", token, body, result)
+}
+
+func (uc *ProductClient) GetProductByID(token string, id int64, result interface{}) error {
+	path := fmt.Sprintf("/product/%d", id)
+	return uc.callAPI(http.MethodGet, path, token, nil, result)
+}
+
+func (uc *ProductClient) GetProducts(token string, limit, offset int, result interface{}) error {
+	path := fmt.Sprintf("/product?limit=%d&offset=%d", limit, offset)
+	return uc.callAPI(http.MethodGet, path, token, nil, result)
 }
